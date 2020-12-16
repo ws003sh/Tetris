@@ -42,7 +42,6 @@
       <div>
         <button @click="changeGraphical('田')">左</button>
         <button @click="changeGraphical('I')">右</button>
-        <button @click="test">test</button>
       </div>
     </div>
   </div>
@@ -66,9 +65,31 @@ export default {
     document.addEventListener('keyup', self.handleKeyUp)
   },
   methods: {
+    rotateGraph () {
+      // 顺时针90度旋转
+      switch (this.graphicalType) {
+        case '田':
+          break
+        case '土':
+          this.rotateSoil()
+          break
+        case 'L':
+          this.showGraphicalMatrix = this.L
+          break
+        case 'Z':
+          this.showGraphicalMatrix = this.Z
+          break
+        case 'I':
+          this.showGraphicalMatrix = this.I
+          break
+      }
+    },
     reset () {
       this.matrix = []
       this.generateMatrix()
+    },
+    rotateSoil () {
+
     },
     handleKeyUp (e) {
       // console.log(e)
@@ -91,11 +112,9 @@ export default {
           }
           break
         case 'ArrowUp':
-          if (this.yOffset !== 0) {
-            this.beforeMove()
-            this.yOffset--
-            this.move()
-          }
+          // 旋转
+          this.graphRotate++ // 0, 90, 180, 270, 360
+          this.rotateGraph()
           break
         case 'ArrowDown':
           let graphicalHeight = this.showGraphicalMatrix.length
@@ -133,41 +152,7 @@ export default {
       this.setGraphicalMatrix()
       this.xOffset = 4
       this.yOffset = 0
-    },
-    test () {
-      // 验证随机数分布 floor 分布的更加均匀
-      let list = []
-      for (let i = 0; i < 10000; i++) {
-        let num = Math.floor((Math.random()) * 5)
-        list.push(num)
-      }
-      let res = {
-        numOf_0: 0,
-        numOf_1: 0,
-        numOf_2: 0,
-        numOf_3: 0,
-        numOf_4: 0
-      }
-      list.forEach(i => {
-        switch (i) {
-          case 0:
-            res.numOf_0++
-            break
-          case 1:
-            res.numOf_1++
-            break
-          case 2:
-            res.numOf_2++
-            break
-          case 3:
-            res.numOf_3++
-            break
-          case 4:
-            res.numOf_4++
-            break
-        }
-      })
-      console.log(res)
+      this.graphRotate = 0
     },
     pushNewGraph () {
       // 随机选择新元素
@@ -207,7 +192,6 @@ export default {
       this.matrix = []
       this.generateMatrix()
       this.getNewGT()
-      // this.setGraphicalMatrix()
       let yOffset = 0
       let xOffset = 4
       this.showGraphicalMatrix.forEach((i, index) => {
@@ -220,7 +204,6 @@ export default {
     },
     beforeMove () {
       // 移动前 删除对应的数据
-      // console.log('beforeMove')
       this.showGraphicalMatrix.forEach((i, index) => {
         i.forEach((j, jIndex) => {
           if (j === 1) {
@@ -231,7 +214,6 @@ export default {
     },
     move () {
       // 移动方块
-      // console.log('move')
       this.showGraphicalMatrix.forEach((i, index) => {
         i.forEach((j, jIndex) => {
           if (j === 1) {
@@ -249,10 +231,10 @@ export default {
   },
   data () {
     return {
-      matrix: [], // 矩阵 宽12 * 高20
+      matrix: [], // 矩阵 宽 12 * 高 20
       currentKey: '', // 当前按下的按键是
-      timer: '', // 计时器
       graphicalType: '田', // 当前放入的对象类型是 方块
+      graphRotate: 0, // 图形基本旋转角度 默认为 0
       xOffset: 4, // 初始位置 x
       yOffset: 0, // 初始位置 y
       matrixWidth: 12, // 矩阵宽度
