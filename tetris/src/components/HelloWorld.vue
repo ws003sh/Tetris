@@ -10,13 +10,16 @@
 </div>
 <div class="control">
   <div>
+    <p>积分： 0</p>
+  </div>
+  <div>
     <p>
       <span>当前按钮：{{ currentKey }}</span>
       <br>
       <span>当前图形：{{ graphicalType }}</span>
     </p>
     <div>
-      <button @click="start(0, 0)">start</button>
+      <button @click="start">start</button>
       <button @click="reset">reset</button>
       <button @keyup.up="handleKeyUp('up')">up</button>
       <button @keyup.down="handleKeyUp('down')">down</button>
@@ -32,6 +35,14 @@
         <button @click="changeGraphical('L')">L</button>
         <button @click="changeGraphical('Z')">Z</button>
         <button @click="changeGraphical('土')">土</button>
+      </div>
+    </div>
+    <div>
+      <p>旋转图形</p>
+      <div>
+        <button @click="changeGraphical('田')">左</button>
+        <button @click="changeGraphical('I')">右</button>
+        <button @click="test">test</button>
       </div>
     </div>
   </div>
@@ -62,26 +73,40 @@ export default {
     handleKeyUp (e) {
       // console.log(e)
       this.currentKey = e.key
+      if (this.showGraphicalMatrix.length === 0) return
       switch (e.key) {
         case 'ArrowRight':
-          this.beforeMove()
-          this.xOffset++
-          this.move()
+          let graphicalWidth = this.showGraphicalMatrix[0].length // 测量图形的长度
+          if (graphicalWidth + this.xOffset !== this.matrixWidth) {
+            this.beforeMove()
+            this.xOffset++
+            this.move()
+          }
           break
         case 'ArrowLeft':
-          this.beforeMove()
-          this.xOffset--
-          this.move()
+          if (this.xOffset !== 0) {
+            this.beforeMove()
+            this.xOffset--
+            this.move()
+          }
           break
         case 'ArrowUp':
-          this.beforeMove()
-          this.yOffset--
-          this.move()
+          if (this.yOffset !== 0) {
+            this.beforeMove()
+            this.yOffset--
+            this.move()
+          }
           break
         case 'ArrowDown':
-          this.beforeMove()
-          this.yOffset++
-          this.move()
+          let graphicalHeight = this.showGraphicalMatrix.length
+          if (this.yOffset + graphicalHeight < this.matrixHeight) {
+            this.beforeMove()
+            this.yOffset++
+            this.move()
+          } else {
+            // 检查是否接触 检查是否需要消除该行
+            this.pushNewGraph()
+          }
           break
       }
     },
@@ -89,9 +114,9 @@ export default {
       // 生成矩阵
       let i = 0
       let j = 0
-      while (j < 20) {
+      while (j < this.matrixHeight) {
         let row = []
-        while (i < 12) {
+        while (i < this.matrixWidth) {
           row.push(0)
           i++
         }
@@ -100,8 +125,66 @@ export default {
         i = 0
       }
     },
-    start () {
-      // 放入一个方块
+    getNewGT () {
+      // 随机选择新元素
+      let num = Math.floor((Math.random()) * 5) // 0-5
+      console.log(this.graphicalTypeList[num])
+      this.graphicalType = this.graphicalTypeList[num]
+      this.setGraphicalMatrix()
+      this.xOffset = 4
+      this.yOffset = 0
+    },
+    test () {
+      // 验证随机数分布 floor 分布的更加均匀
+      let list = []
+      for (let i = 0; i < 10000; i++) {
+        let num = Math.floor((Math.random()) * 5)
+        list.push(num)
+      }
+      let res = {
+        numOf_0: 0,
+        numOf_1: 0,
+        numOf_2: 0,
+        numOf_3: 0,
+        numOf_4: 0
+      }
+      list.forEach(i => {
+        switch (i) {
+          case 0:
+            res.numOf_0++
+            break
+          case 1:
+            res.numOf_1++
+            break
+          case 2:
+            res.numOf_2++
+            break
+          case 3:
+            res.numOf_3++
+            break
+          case 4:
+            res.numOf_4++
+            break
+        }
+      })
+      console.log(res)
+    },
+    pushNewGraph () {
+      // 随机选择新元素
+      this.getNewGT()
+      // 插入新元素
+      let yOffset = 0
+      let xOffset = 4
+      this.showGraphicalMatrix.forEach((i, index) => {
+        i.forEach((j, jIndex) => {
+          if (j === 1) {
+            this.matrix[yOffset + index].splice(xOffset + jIndex, 1, 1)
+          }
+        })
+      })
+    },
+    setGraphicalMatrix () {
+      // 将对应的图形放入矩阵
       switch (this.graphicalType) {
         case '田':
           this.showGraphicalMatrix = this.田
@@ -119,6 +202,12 @@ export default {
           this.showGraphicalMatrix = this.I
           break
       }
+    },
+    start () {
+      this.matrix = []
+      this.generateMatrix()
+      this.getNewGT()
+      // this.setGraphicalMatrix()
       let yOffset = 0
       let xOffset = 4
       this.showGraphicalMatrix.forEach((i, index) => {
@@ -131,7 +220,7 @@ export default {
     },
     beforeMove () {
       // 移动前 删除对应的数据
-      console.log('beforeMove')
+      // console.log('beforeMove')
       this.showGraphicalMatrix.forEach((i, index) => {
         i.forEach((j, jIndex) => {
           if (j === 1) {
@@ -142,7 +231,7 @@ export default {
     },
     move () {
       // 移动方块
-      console.log('move')
+      // console.log('move')
       this.showGraphicalMatrix.forEach((i, index) => {
         i.forEach((j, jIndex) => {
           if (j === 1) {
@@ -164,9 +253,12 @@ export default {
       currentKey: '', // 当前按下的按键是
       timer: '', // 计时器
       graphicalType: '田', // 当前放入的对象类型是 方块
-      xOffset: 4,
-      yOffset: 0,
-      showGraphicalMatrix: [],
+      xOffset: 4, // 初始位置 x
+      yOffset: 0, // 初始位置 y
+      matrixWidth: 12, // 矩阵宽度
+      matrixHeight: 20, // 矩阵高度
+      showGraphicalMatrix: [], // 当前放入图形的数据
+      graphicalTypeList: ['田', '土', 'L', 'Z', 'I'], // 当前放入图形的数据
       土: [
         [0, 1, 0],
         [1, 1, 1]
@@ -198,54 +290,5 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-.space {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  /* width: 400px; */
-  border: 1px solid;
-  border-bottom: 0;
-}
-.row {
-  /* border: 1px solid; */
-  border-bottom: 1px solid;
-  display: flex;
-}
-.item {
-  padding: 5px;
-  width: 20px;
-  height: 20px;
-  border: 1px solid;
-  border-bottom: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.index {
-  padding: 5px;
-  border-right: 1px solid;
-}
-.haveValue {
-  background-color: rgb(235, 190, 94);
-  color: white;
-}
-.view {
-  display: flex;
-}
-.control {
-  display: flex;
-  flex-direction: column;
-  border: 1px solid;
-}
-.control div {
-  margin-bottom: 20px;
-}
-.control button {
-  color: white;
-  background-color: red;
-  border: 1px solid white;
-  width: 60px;
-  height: 30px;
-}
+@import 'index.css'
 </style>
