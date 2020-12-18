@@ -10,7 +10,7 @@
 </div>
 <div class="control">
   <div>
-    <p>积分： 0</p>
+    <p>积分： {{ source }}</p>
   </div>
   <div>
     <p>
@@ -67,25 +67,117 @@ export default {
   methods: {
     rotateGraph () {
       // 顺时针90度旋转
+      let graphRotate = this.graphRotate % 4 // 0 1 2 3
       switch (this.graphicalType) {
         case '田':
+          // 不变
           break
         case '土':
-          this.rotateSoil()
+          this.beforeMove()
+          if (graphRotate === 1) {
+            this.showGraphicalMatrix = [
+              [1, 0],
+              [1, 1],
+              [1, 0]
+            ]
+          } else if (graphRotate === 0) {
+            this.showGraphicalMatrix = [
+              [0, 1, 0],
+              [1, 1, 1]
+            ]
+          } else if (graphRotate === 2) {
+            this.showGraphicalMatrix = [
+              [1, 1, 1],
+              [0, 1, 0]
+            ]
+          } else if (graphRotate === 3) {
+            this.showGraphicalMatrix = [
+              [0, 1],
+              [1, 1],
+              [0, 1]
+            ]
+          }
+          this.move()
           break
         case 'L':
-          this.showGraphicalMatrix = this.L
+          this.beforeMove()
+          if (graphRotate === 1) {
+            this.showGraphicalMatrix = [
+              [1, 1, 1, 1],
+              [1, 0, 0, 0]
+            ]
+          } else if (graphRotate === 0) {
+            this.showGraphicalMatrix = [
+              [1, 0],
+              [1, 0],
+              [1, 0],
+              [1, 1]
+            ]
+          } else if (graphRotate === 2) {
+            this.showGraphicalMatrix = [
+              [1, 1],
+              [0, 1],
+              [0, 1],
+              [0, 1]
+            ]
+          } else if (graphRotate === 3) {
+            this.showGraphicalMatrix = [
+              [0, 0, 0, 1],
+              [1, 1, 1, 1]
+            ]
+          }
+          this.move()
           break
         case 'Z':
-          this.showGraphicalMatrix = this.Z
+          this.beforeMove()
+          if (graphRotate === 1) {
+            this.showGraphicalMatrix = [
+              [0, 1],
+              [1, 1],
+              [1, 0]
+            ]
+          } else if (graphRotate === 0) {
+            this.showGraphicalMatrix = [
+              [1, 1, 0],
+              [0, 1, 1]
+            ]
+          } else if (graphRotate === 2) {
+            this.showGraphicalMatrix = [
+              [1, 1, 0],
+              [0, 1, 1]
+            ]
+          } else if (graphRotate === 3) {
+            this.showGraphicalMatrix = [
+              [0, 1],
+              [1, 1],
+              [1, 0]
+            ]
+          }
+          this.move()
           break
         case 'I':
-          this.showGraphicalMatrix = this.I
+          // graphRotate 取余数
+          this.beforeMove()
+          if (graphRotate === 1 || graphRotate === 3) {
+            this.showGraphicalMatrix = [
+              [1, 1, 1, 1]
+            ]
+          } else if (graphRotate === 2 || graphRotate === 0) {
+            this.showGraphicalMatrix = [
+              [1],
+              [1],
+              [1],
+              [1]
+            ]
+          }
+          this.move()
+          // this.showGraphicalMatrix = this.I
           break
       }
     },
     reset () {
       this.matrix = []
+      this.graphRotate = 0
       this.generateMatrix()
     },
     rotateSoil () {
@@ -124,9 +216,30 @@ export default {
             this.move()
           } else {
             // 检查是否接触 检查是否需要消除该行
+            this.checkRow()
+            // 添加新元素
             this.pushNewGraph()
           }
           break
+      }
+    },
+    checkRow () {
+      // 检查是否有行需要消除
+      let num = 0
+      this.matrix[19].forEach(i => {
+        if (i === 1) {
+          num++
+        }
+      })
+      if (num === this.matrixWidth) {
+        this.source = this.source + 100
+        let row = []
+        for (let i = 0; i < this.matrixWidth; i++) {
+          row.push(0)
+        }
+        // 清除最后一行
+        this.matrix.splice(this.matrixHeight - 1, 1)
+        this.matrix.unshift(row)
       }
     },
     generateMatrix () {
@@ -147,7 +260,7 @@ export default {
     getNewGT () {
       // 随机选择新元素
       let num = Math.floor((Math.random()) * 5) // 0-5
-      console.log(this.graphicalTypeList[num])
+      // console.log(this.graphicalTypeList[num])
       this.graphicalType = this.graphicalTypeList[num]
       this.setGraphicalMatrix()
       this.xOffset = 4
@@ -240,6 +353,7 @@ export default {
       matrixWidth: 12, // 矩阵宽度
       matrixHeight: 20, // 矩阵高度
       showGraphicalMatrix: [], // 当前放入图形的数据
+      source: 0, // 当前积分
       graphicalTypeList: ['田', '土', 'L', 'Z', 'I'], // 当前放入图形的数据
       土: [
         [0, 1, 0],
