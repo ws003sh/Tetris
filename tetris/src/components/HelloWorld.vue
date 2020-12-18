@@ -19,12 +19,14 @@
       <span>当前图形：{{ graphicalType }}</span>
     </p>
     <div>
-      <button @click="start">start</button>
-      <button @click="reset">reset</button>
-      <button @keyup.up="handleKeyUp('up')">up</button>
-      <button @keyup.down="handleKeyUp('down')">down</button>
-      <button @keyup.left="handleKeyUp('left')">left</button>
-      <button @keyup.right="handleKeyUp('right')">right</button>
+      <div>
+        <button @click="start">开始</button>
+        <button @click="reset">重置</button>
+      </div>
+      <button @keyup.up="handleKeyUp('up')">旋转</button>
+      <button @keyup.down="handleKeyUp('down')">下</button>
+      <button @keyup.left="handleKeyUp('left')">左</button>
+      <button @keyup.right="handleKeyUp('right')">右</button>
     </div>
   </div>
     <div>
@@ -35,13 +37,6 @@
         <button @click="changeGraphical('L')">L</button>
         <button @click="changeGraphical('Z')">Z</button>
         <button @click="changeGraphical('土')">土</button>
-      </div>
-    </div>
-    <div>
-      <p>旋转图形</p>
-      <div>
-        <button @click="changeGraphical('田')">左</button>
-        <button @click="changeGraphical('I')">右</button>
       </div>
     </div>
   </div>
@@ -205,42 +200,69 @@ export default {
           break
         case 'ArrowUp':
           // 旋转
-          this.graphRotate++ // 0, 90, 180, 270, 360
+          this.graphRotate++
           this.rotateGraph()
           break
         case 'ArrowDown':
           let graphicalHeight = this.showGraphicalMatrix.length
           if (this.yOffset + graphicalHeight < this.matrixHeight) {
-            this.beforeMove()
-            this.yOffset++
-            this.move()
+            // 检测下一步是否有空间的
+            if (!this.checkNextRow()) {
+              this.checkRow()
+              this.pushNewGraph()
+            } else {
+              this.beforeMove()
+              this.yOffset++
+              this.move()
+              if (!this.checkNextRow()) {
+                this.checkRow()
+                this.pushNewGraph()
+              }
+            }
           } else {
-            // 检查是否接触 检查是否需要消除该行
             this.checkRow()
-            // 添加新元素
             this.pushNewGraph()
           }
           break
       }
     },
+    checkNextRow () {
+      // 检查下一行能否走下去
+      let graphicalHeight = this.showGraphicalMatrix.length
+      let res = 0
+      for (let i = 0; i < this.showGraphicalMatrix[0].length; i++) {
+        if (this.yOffset + graphicalHeight < this.matrixHeight) {
+          if (this.matrix[this.yOffset + graphicalHeight][this.xOffset + i] === 1) {
+            res++
+          }
+        }
+      }
+      if (res === this.showGraphicalMatrix[0].length) {
+        return false
+      } else {
+        return true
+      }
+    },
     checkRow () {
       // 检查是否有行需要消除
-      let num = 0
-      this.matrix[19].forEach(i => {
-        if (i === 1) {
-          num++
+      this.matrix.forEach((j, index) => {
+        let num = 0
+        j.forEach(k => {
+          if (k === 1) {
+            num++
+          }
+        })
+        if (num === this.matrixWidth) {
+          this.source = this.source + 100
+          let row = []
+          for (let i = 0; i < this.matrixWidth; i++) {
+            row.push(0)
+          }
+          // 清除最后一行
+          this.matrix.splice(index, 1)
+          this.matrix.unshift(row)
         }
       })
-      if (num === this.matrixWidth) {
-        this.source = this.source + 100
-        let row = []
-        for (let i = 0; i < this.matrixWidth; i++) {
-          row.push(0)
-        }
-        // 清除最后一行
-        this.matrix.splice(this.matrixHeight - 1, 1)
-        this.matrix.unshift(row)
-      }
     },
     generateMatrix () {
       // 生成矩阵
@@ -351,7 +373,7 @@ export default {
       xOffset: 4, // 初始位置 x
       yOffset: 0, // 初始位置 y
       matrixWidth: 12, // 矩阵宽度
-      matrixHeight: 20, // 矩阵高度
+      matrixHeight: 10, // 矩阵高度
       showGraphicalMatrix: [], // 当前放入图形的数据
       source: 0, // 当前积分
       graphicalTypeList: ['田', '土', 'L', 'Z', 'I'], // 当前放入图形的数据
