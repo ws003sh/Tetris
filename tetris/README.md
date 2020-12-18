@@ -1,27 +1,7 @@
-# tetris
-
-> A Vue.js project
-
-## Build Setup
-
-``` bash
-# install dependencies
-npm install
-
-# serve with hot reload at localhost:8080
-npm run dev
-
-# build for production with minification
-npm run build
-
-# build for production and view the bundle analyzer report
-npm run build --report
-
-# run unit tests
-npm run unit
-
-# run all tests
-npm test
-```
-
-For a detailed explanation on how things work, check out the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).
+# 用vue搭建俄罗斯方块
+## 设计矩阵
+    整个游戏空间其实是
+## 放入方块
+## 移动方块、旋转方块
+## 检测某行是否充满
+## 积分

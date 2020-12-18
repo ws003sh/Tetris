@@ -44,8 +44,9 @@
 </template>
 
 <script>
+import Mixin from './mixin'
 export default {
-  name: 'HelloWorld',
+  mixins: [Mixin],
   filters: {
     fixIndex (num) {
       if (num < 10) {
@@ -376,31 +377,7 @@ export default {
       matrixHeight: 10, // 矩阵高度
       showGraphicalMatrix: [], // 当前放入图形的数据
       source: 0, // 当前积分
-      graphicalTypeList: ['田', '土', 'L', 'Z', 'I'], // 当前放入图形的数据
-      土: [
-        [0, 1, 0],
-        [1, 1, 1]
-      ],
-      L: [
-        [1, 0],
-        [1, 0],
-        [1, 0],
-        [1, 1]
-      ],
-      I: [
-        [1],
-        [1],
-        [1],
-        [1]
-      ],
-      田: [
-        [1, 1],
-        [1, 1]
-      ],
-      Z: [
-        [1, 1, 0],
-        [0, 1, 1]
-      ]
+      graphicalTypeList: ['田', '土', 'L', 'Z', 'I'] // 当前放入图形的数据
     }
   }
 }
